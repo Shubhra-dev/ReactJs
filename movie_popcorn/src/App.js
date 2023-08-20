@@ -55,15 +55,28 @@ export default function App() {
   const [movies, setMovies] = useState(tempMovieData);
   const [watched, setWatched] = useState(tempWatchedData);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const query = "journey";
 
   useEffect(function () {
     async function fetchMovies() {
-      const res = await fetch(
-        `http://www.omdbapi.com/?apikey=${KEY}&s=interstellar`
-      );
-      const data = await res.json();
-      setMovies(data.Search);
-      setIsLoading(false);
+      try {
+        const res = await fetch(
+          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+        );
+        if (!res.ok) {
+          throw new Error("Something Went Wrong!! 🔄");
+        }
+        const data = await res.json();
+        if (data.Response === "False") {
+          throw new Error("Movie Not Found!! ❌");
+        }
+        setMovies(data.Search);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
     }
     fetchMovies();
   }, []);
@@ -75,7 +88,11 @@ export default function App() {
         <NumMovies movies={movies} />
       </Navbar>
       <Main>
-        <Box>{isLoading ? <Loader /> : <MovieList movies={movies} />}</Box>
+        <Box>
+          {isLoading && <Loader />}
+          {!isLoading && !error && <MovieList movies={movies} />}
+          {error && <ErrorMessage message={error} />}
+        </Box>
         <Box>
           <MovieSummary watched={watched} />
           <WatchedList watched={watched} />
@@ -86,6 +103,9 @@ export default function App() {
 }
 function Loader() {
   return <p className="loader">Loading....</p>;
+}
+function ErrorMessage({ message }) {
+  return <p className="error">{message}</p>;
 }
 function Navbar({ children }) {
   return <nav className="nav-bar">{children}</nav>;
@@ -113,7 +133,7 @@ function Search() {
 function NumMovies({ movies }) {
   return (
     <p className="num-results">
-      Found <strong>{movies.length}</strong> results
+      Found <strong>{movies ? movies.length : 0}</strong> results
     </p>
   );
 }
