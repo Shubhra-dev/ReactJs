@@ -54,7 +54,8 @@ const KEY = "4fe6f855";
 export default function App() {
   const [movies, setMovies] = useState(tempMovieData);
   const [watched, setWatched] = useState(tempWatchedData);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(null);
+  const [selectedId, setSelectedID] = useState(null);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
 
@@ -62,6 +63,7 @@ export default function App() {
     function () {
       async function fetchMovies() {
         setError("");
+        setIsLoading(true);
         try {
           const res = await fetch(
             `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
@@ -90,6 +92,12 @@ export default function App() {
     },
     [query]
   );
+  function handleSelectedMovie(id) {
+    setSelectedID(id);
+  }
+  function handleBack() {
+    setSelectedID(null);
+  }
   return (
     <>
       <Navbar>
@@ -100,12 +108,20 @@ export default function App() {
       <Main>
         <Box>
           {isLoading && <Loader />}
-          {!isLoading && !error && <MovieList movies={movies} />}
+          {!isLoading && !error && (
+            <MovieList movies={movies} selectedMovie={handleSelectedMovie} />
+          )}
           {error && <ErrorMessage message={error} />}
         </Box>
         <Box>
-          <MovieSummary watched={watched} />
-          <WatchedList watched={watched} />
+          {selectedId ? (
+            <MovieDetail id={selectedId} handleBack={handleBack} />
+          ) : (
+            <>
+              <MovieSummary watched={watched} />
+              <WatchedList watched={watched} />
+            </>
+          )}
         </Box>
       </Main>
     </>
@@ -161,11 +177,19 @@ function Box({ children }) {
     </div>
   );
 }
-function MovieList({ movies }) {
+function MovieDetail({ id, handleBack }) {
   return (
-    <ul className="list">
+    <>
+      <p>{id}</p>
+      <button onClick={handleBack}>X</button>;
+    </>
+  );
+}
+function MovieList({ movies, selectedMovie }) {
+  return (
+    <ul className="list list-movies">
       {movies?.map((movie) => (
-        <li key={movie.imdbID}>
+        <li key={movie.imdbID} onClick={() => selectedMovie(movie.imdbID)}>
           <img src={movie.Poster} alt={`${movie.Title} poster`} />
           <h3>{movie.Title}</h3>
           <div>
