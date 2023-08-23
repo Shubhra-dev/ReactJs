@@ -1,59 +1,13 @@
 import { useEffect, useState } from "react";
 import StarRating from "./StarRating";
-const tempMovieData = [
-  {
-    imdbID: "tt1375666",
-    Title: "Inception",
-    Year: "2010",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
-  },
-  {
-    imdbID: "tt0133093",
-    Title: "The Matrix",
-    Year: "1999",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg",
-  },
-  {
-    imdbID: "tt6751668",
-    Title: "Parasite",
-    Year: "2019",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg",
-  },
-];
-
-const tempWatchedData = [
-  {
-    imdbID: "tt1375666",
-    Title: "Inception",
-    Year: "2010",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
-    runtime: 148,
-    imdbRating: 8.8,
-    userRating: 10,
-  },
-  {
-    imdbID: "tt0088763",
-    Title: "Back to the Future",
-    Year: "1985",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
-    runtime: 116,
-    imdbRating: 8.5,
-    userRating: 9,
-  },
-];
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 const KEY = "4fe6f855";
 export default function App() {
-  const [movies, setMovies] = useState(tempMovieData);
-  const [watched, setWatched] = useState(tempWatchedData);
+  const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(null);
   const [selectedId, setSelectedID] = useState(null);
   const [error, setError] = useState("");
@@ -95,6 +49,9 @@ export default function App() {
   function handleSelectedMovie(id) {
     setSelectedID(id);
   }
+  function handleWatchedMovie(movie) {
+    setWatched((watched) => [...watched, movie]);
+  }
   function handleBack() {
     setSelectedID(null);
   }
@@ -115,7 +72,11 @@ export default function App() {
         </Box>
         <Box>
           {selectedId ? (
-            <MovieDetail id={selectedId} handleBack={handleBack} />
+            <MovieDetail
+              id={selectedId}
+              handleBack={handleBack}
+              handleWatchedMovie={handleWatchedMovie}
+            />
           ) : (
             <>
               <MovieSummary watched={watched} />
@@ -177,7 +138,7 @@ function Box({ children }) {
     </div>
   );
 }
-function MovieDetail({ id, handleBack }) {
+function MovieDetail({ id, handleBack, handleWatchedMovie }) {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   useEffect(
@@ -196,6 +157,16 @@ function MovieDetail({ id, handleBack }) {
     },
     [id]
   );
+  function addToWatched() {
+    const newMovie = {
+      ...movie,
+      userRating: movie.imdbRating,
+      Runtime:
+        movie.Runtime === "N/A" ? 0 : Number(movie.Runtime.split(" ").at(0)),
+    };
+    handleWatchedMovie(newMovie);
+    handleBack();
+  }
 
   return (
     <div className="details">
@@ -221,6 +192,9 @@ function MovieDetail({ id, handleBack }) {
           <section>
             <div className="rating">
               <StarRating maxRating={10} size={24} />
+              <button className="btn-add" onClick={addToWatched}>
+                +Add To Watchlist
+              </button>
             </div>
             <p>
               <em>{movie.Plot}</em>
@@ -274,7 +248,7 @@ function MovieList({ movies, selectedMovie }) {
 function MovieSummary({ watched }) {
   const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
   const avgUserRating = average(watched.map((movie) => movie.userRating));
-  const avgRuntime = average(watched.map((movie) => movie.runtime));
+  const avgRuntime = average(watched.map((movie) => movie.Runtime));
   return (
     <div className="summary">
       <h2>Movies you watched</h2>
@@ -317,7 +291,7 @@ function WatchedList({ watched }) {
             </p>
             <p>
               <span>⏳</span>
-              <span>{movie.runtime} min</span>
+              <span>{movie.Runtime} min</span>
             </p>
           </div>
         </li>
