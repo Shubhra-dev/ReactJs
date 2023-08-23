@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+import StarRating from "./StarRating";
 const tempMovieData = [
   {
     imdbID: "tt1375666",
@@ -179,8 +179,10 @@ function Box({ children }) {
 }
 function MovieDetail({ id, handleBack }) {
   const [movie, setMovie] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(
     function () {
+      setIsLoading(true);
       async function fetchMovies() {
         const res = await fetch(
           `http://www.omdbapi.com/?apikey=${KEY}&i=${id}`
@@ -188,6 +190,7 @@ function MovieDetail({ id, handleBack }) {
         const data = await res.json();
         console.log(data);
         setMovie(data);
+        setIsLoading(false);
       }
       fetchMovies();
     },
@@ -196,16 +199,37 @@ function MovieDetail({ id, handleBack }) {
 
   return (
     <div className="details">
-      <button onClick={handleBack}>X</button>
-      <img src={movie.Poster} alt={`Poster of the ${movie.Title}`} />
-      <div className="details-overview">
-        <h2>{movie.Title}</h2>
-        <p>
-          {movie.Released} &bull; {movie.Runtime}
-        </p>
-        <p>{movie.Genre}</p>
-        <p>⭐{movie.imdbRating} IMDB Rating</p>
-      </div>
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <>
+          <header>
+            <button className="btn-back" onClick={handleBack}>
+              X
+            </button>
+            <img src={movie.Poster} alt={`Poster of the ${movie.Title}`} />
+            <div className="details-overview">
+              <h2>{movie.Title}</h2>
+
+              <p>
+                {movie.Released} &bull; {movie.Runtime}
+              </p>
+              <p>{movie.Genre}</p>
+              <p>⭐{movie.imdbRating} IMDB Rating</p>
+            </div>
+          </header>
+          <section>
+            <div className="rating">
+              <StarRating maxRating={10} size={24} />
+            </div>
+            <p>
+              <em>{movie.Plot}</em>
+            </p>
+            <p>Starring {movie.Actors}</p>
+            <p>Directed by {movie.Director}</p>
+          </section>
+        </>
+      )}
     </div>
   );
 }
