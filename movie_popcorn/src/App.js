@@ -178,11 +178,35 @@ function Box({ children }) {
   );
 }
 function MovieDetail({ id, handleBack }) {
+  const [movie, setMovie] = useState({});
+  useEffect(
+    function () {
+      async function fetchMovies() {
+        const res = await fetch(
+          `http://www.omdbapi.com/?apikey=${KEY}&i=${id}`
+        );
+        const data = await res.json();
+        console.log(data);
+        setMovie(data);
+      }
+      fetchMovies();
+    },
+    [id]
+  );
+
   return (
-    <>
-      <p>{id}</p>
-      <button onClick={handleBack}>X</button>;
-    </>
+    <div className="details">
+      <button onClick={handleBack}>X</button>
+      <img src={movie.Poster} alt={`Poster of the ${movie.Title}`} />
+      <div className="details-overview">
+        <h2>{movie.Title}</h2>
+        <p>
+          {movie.Released} &bull; {movie.Runtime}
+        </p>
+        <p>{movie.Genre}</p>
+        <p>⭐{movie.imdbRating} IMDB Rating</p>
+      </div>
+    </div>
   );
 }
 function MovieList({ movies, selectedMovie }) {
