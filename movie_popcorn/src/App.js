@@ -164,6 +164,18 @@ function MovieDetail({ id, handleBack, handleWatchedMovie, watched }) {
     },
     [id]
   );
+
+  useEffect(
+    function () {
+      if (!movie.Title) return;
+      document.title = `${movie.Title}`;
+
+      return function () {
+        document.title = "Movie Popcorn";
+      };
+    },
+    [movie.Title]
+  );
   function addToWatched() {
     const newMovie = {
       ...movie,
@@ -278,11 +290,11 @@ function MovieSummary({ watched }) {
         </p>
         <p>
           <span>⭐️</span>
-          <span>{avgImdbRating}</span>
+          <span>{avgImdbRating.toFixed(2)}</span>
         </p>
         <p>
           <span>🌟</span>
-          <span>{avgUserRating}</span>
+          <span>{avgUserRating.toFixed(2)}</span>
         </p>
         <p>
           <span>⏳</span>
