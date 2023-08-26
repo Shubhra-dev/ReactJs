@@ -7,7 +7,11 @@ const average = (arr) =>
 const KEY = "4fe6f855";
 export default function App() {
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
+  const [watched, setWatched] = useState(function () {
+    const storedValue = localStorage.getItem("watched");
+
+    return JSON.parse(storedValue);
+  });
   const [isLoading, setIsLoading] = useState(null);
   const [selectedId, setSelectedID] = useState(null);
   const [error, setError] = useState("");
@@ -62,6 +66,12 @@ export default function App() {
   function handleWatchedMovie(movie) {
     setWatched((watched) => [...watched, movie]);
   }
+  useEffect(
+    function () {
+      localStorage.setItem("watched", JSON.stringify(watched));
+    },
+    [watched]
+  );
   function handleBack() {
     setSelectedID(null);
   }
