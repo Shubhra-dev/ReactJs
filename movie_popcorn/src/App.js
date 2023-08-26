@@ -47,6 +47,7 @@ export default function App() {
         setMovies([]);
         return;
       }
+      handleBack();
       fetchMovies();
 
       return function () {
@@ -184,6 +185,22 @@ function MovieDetail({ id, handleBack, handleWatchedMovie, watched }) {
       };
     },
     [movie.Title]
+  );
+
+  useEffect(
+    function () {
+      function callback(e) {
+        if (e.code === "Escape") {
+          handleBack();
+        }
+      }
+      document.addEventListener("keydown", callback);
+
+      return function () {
+        document.removeEventListener("keydown", callback);
+      };
+    },
+    [handleBack]
   );
   function addToWatched() {
     const newMovie = {
