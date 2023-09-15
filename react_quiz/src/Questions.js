@@ -13,6 +13,7 @@ function Questions({ dispatch, question, answer }) {
                   : "wrong"
                 : ""
             }`}
+            key={op}
             onClick={() => dispatch({ type: "newAnswer", payload: index })}
           >
             {op}
