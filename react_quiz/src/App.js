@@ -8,21 +8,34 @@ import Questions from "./Questions";
 import NextButton from "./NextButton";
 import Progress from "./Progress";
 import FinishedScreen from "./FinishedScreen";
+import Timer from "./Timer";
 const initialState = {
   questions: [],
   status: "loading",
   index: 0,
   answer: null,
   points: 0,
+  highestPoint: 0,
+  secondsRem: null,
 };
+
+const SEC_PER_QUES = 20;
 function reducer(state, action) {
   switch (action.type) {
     case "dataReceived":
-      return { ...state, questions: action.payload, status: "ready" };
+      return {
+        ...state,
+        questions: action.payload,
+        status: "ready",
+      };
     case "dataFailed":
       return { ...state, status: "error" };
     case "start":
-      return { ...state, status: "active" };
+      return {
+        ...state,
+        status: "active",
+        secondsRem: state.questions.length * SEC_PER_QUES,
+      };
     case "newAnswer":
       return { ...state, answer: action.payload };
     case "nextQues":
@@ -45,7 +58,19 @@ function reducer(state, action) {
         status: "finish",
       };
     case "restart":
-      return { ...initialState, status: "ready", questions: state.questions };
+      return {
+        ...initialState,
+        questions: state.questions,
+        highestPoint:
+          state.points > state.highestPoint ? state.points : state.highestPoint,
+        status: "ready",
+      };
+    case "timer":
+      return {
+        ...state,
+        secondsRem: state.secondsRem - 1,
+        status: state.secondsRem === 0 ? "finish" : state.status,
+      };
     default:
       throw new Error("Not Known");
   }
@@ -60,6 +85,7 @@ export default function App() {
       .then((data) => dispatch({ type: "dataReceived", payload: data }))
       .catch((err) => dispatch({ type: "dataFailed" }));
   }, []);
+  console.log(state.highestPoint);
   return (
     <div className="app">
       <Header />
@@ -83,12 +109,15 @@ export default function App() {
               question={state.questions[state.index]}
               answer={state.answer}
             />
-            <NextButton
-              dispatch={dispatch}
-              answer={state.answer}
-              index={state.index}
-              numOfQuestion={numOfQues}
-            />
+            <footer>
+              <Timer dispatch={dispatch} secondsRem={state.secondsRem} />
+              <NextButton
+                dispatch={dispatch}
+                answer={state.answer}
+                index={state.index}
+                numOfQuestion={numOfQues}
+              />
+            </footer>
           </>
         )}
         {state.status === "finish" && (
@@ -96,6 +125,7 @@ export default function App() {
             point={state.points}
             maxPoint={maxPoint}
             dispatch={dispatch}
+            highestPoint={state.highestPoint}
           />
         )}
       </Main>

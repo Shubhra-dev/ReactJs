@@ -15,6 +15,7 @@ function Questions({ dispatch, question, answer }) {
             }`}
             key={op}
             onClick={() => dispatch({ type: "newAnswer", payload: index })}
+            disabled={isAnswered}
           >
             {op}
           </button>
