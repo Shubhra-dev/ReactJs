@@ -7,7 +7,6 @@ function createRandomPost() {
     body: faker.hacker.phrase(),
   };
 }
-
 function App() {
   const [posts, setPosts] = useState(() =>
     Array.from({ length: 30 }, () => createRandomPost())
